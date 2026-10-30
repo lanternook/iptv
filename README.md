@@ -1,6 +1,6 @@
 # iptv —— 直播源订阅
 
-零本机部署：GitHub Actions 云端产候选池，本机移动家宽实测精选，供 Android 7 电视盒 FongMi/TV 订阅。
+本机工具链：源池 → 本机移动家宽实测 → 精选 `curated.txt`，供 Android 7 电视盒 FongMi/TV 订阅。
 
 > **完整手册已归档**：`E:\workbuddy\.workbuddy\memory\archive\iptv.md`（根因分析、踩坑清单、全部工具说明）。
 > 本文件只保留当前状态与日常操作。
@@ -12,14 +12,16 @@
 备   https://ghfast.top/https://raw.githubusercontent.com/lanternook/iptv/main/output/curated.txt
 ```
 
-仓库 https://github.com/lanternook/iptv ，工作流 `Update playlist` 每日北京 06:00 / 18:00 跑，只更新候选池。
+仓库 https://github.com/lanternook/iptv ，**仅作静态托管**：工作流 `Update playlist` 已于 2026-10-31 停用
+（`disabled_manually`，文件保留在 `.github/workflows/update-cron.yml`，需要时在 Actions 页点 Enable 可恢复）。
+`curated.txt` 只由本机测速后手动推送更新，仓库不再有任何自动行为。
 
 ## 两个文件的分工
 
 | 文件 | 作用 | 更新 |
 |---|---|---|
-| `output/user_result.txt` | 云端候选池（海外测速，仅素材） | Actions 自动 |
-| `output/curated.txt` | **实测精选，唯一可用的订阅** | 本机测速后手动推 |
+| `output/curated.txt` | **实测精选，唯一订阅**（96 条） | 本机测速后手动推 |
+| `output/tv_result.txt` | 电视端实测底表，合并时用 | 换网络/换环境重测后推 |
 
 ## 定稿状态（2026-10-31）
 
@@ -49,8 +51,12 @@ python tools/verify_feed.py                                                     
 
 ```
 config/     模板、订阅源、黑名单、网关映射
-tools/      测速/合并/枚举/校验/推送 全套脚本
-output/     结果与地址清单（pool.txt 为源池快照）
+tools/      测速/合并/枚举/校验/推送 全套脚本（token.txt 已 gitignore）
+output/     精选结果、电视端底表、源池快照（pool.txt）
 handoff/    交接包源目录（可拷到其他环境跑测速）
 dist/       交接包 zip
+old/        【仓库内】已停用的上游 iptv-api 源码与云端 Actions 产物，仅作存档不参与流程
 ```
+
+> 仓库侧同样只有上面前五项参与流程，其余全部在 `old/`。
+> 若某天要恢复云端跑批：在 Actions 页 Enable 工作流，并把 `old/` 里的源码移回根目录。
