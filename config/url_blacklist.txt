@@ -1,0 +1,17 @@
+# 线路黑名单：URL 命中任一关键字的线路在合并时直接丢弃（一行一个关键字）
+# 依据：2026-10-31 抽帧实测（tools/grab_frames.py + 人工识台标）
+
+# 河北广电 jishi/cp1、cp2 实测为 TVU 测试卡（彩条测试图），不是频道信号
+hebtv.com/jishi
+
+# 短链，无法验证内容，且挂在 CCTV-9 名下无依据
+xykt-fix.github.io
+
+# 113.25/222.169/124.165 的 txiptv tsfile 编号流：实测 1006_1 挂 CCTV-2 名下却是 CCTV-1 台标，
+# 编号与台号不对应且本机无法逐条验证，先删宁缺毋错
+tsfile/live/1006_1
+tsfile/live/1008_1
+tsfile/live/0008_1
+tsfile/live/1014_1
+tsfile/live/1017_1
+tsfile/live/1018_1
