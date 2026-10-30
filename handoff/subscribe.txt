@@ -1,0 +1,23 @@
+# 社区订阅源清单（每行一个地址；# 开头为注释）
+# 2026-10-30 实测可达；源越多，海外 runner 能测通的线路越多
+# 单个源可追加 UA 指定请求头：https://xxx.m3u UA="okhttp/3.15"
+
+https://raw.githubusercontent.com/Kimentanm/aptv/master/m3u/iptv.m3u
+https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u
+https://raw.githubusercontent.com/zhumeng11/IPTV/main/IPTV.m3u
+https://raw.githubusercontent.com/wwb521/live/main/tv.m3u
+https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.m3u
+https://raw.githubusercontent.com/YanG-1989/m3u/main/Gather.m3u
+https://raw.githubusercontent.com/ssili126/tv/main/itvlist.txt
+https://raw.githubusercontent.com/zbefine/iptv/main/iptv.m3u
+https://raw.githubusercontent.com/iptv-org/iptv/master/streams/cn.m3u
+https://raw.githubusercontent.com/gaotianliuyun/gao/master/list.txt
+https://raw.githubusercontent.com/Supprise0901/TVBox_live/main/live.txt
+https://raw.githubusercontent.com/joevess/IPTV/main/home.m3u8
+
+# 纯 IPv6 源：Actions 运行机无 IPv6，默认不启用
+# https://raw.githubusercontent.com/fanmingming/live/main/tv/m3u/ipv6.m3u
+
+[WHITELIST]
+# 此处填写"订阅源地址"白名单（该源的全部接口不测速、保留在结果最前）。
+# 频道级白名单写在 config/user_demo.txt 的地址后加 $!

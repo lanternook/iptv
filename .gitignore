@@ -1,5 +1,7 @@
-dist
-build
-.idea
+tools/token.txt
+*.token
+dist/
+build/
+tmp/
 __pycache__/
-/output/
+*.pyc

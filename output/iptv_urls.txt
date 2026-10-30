@@ -1,0 +1,13 @@
+# 直播源订阅地址（生成时间 2026-10-30 21:20:56）
+# 目标: lanternook/iptv@main/output/curated.txt
+# 探测: 超时5s, 校验 #genre#/#EXTM3U, 代理=关
+
+排名   通道             耗时       地址
+1    ghfast.top     1165ms   https://ghfast.top/https://raw.githubusercontent.com/lanternook/iptv/main/output/curated.txt
+2    gh-proxy.com   2070ms   https://gh-proxy.com/github.com/lanternook/iptv/raw/main/output/curated.txt
+3    jsDelivr CDN   3695ms   https://cdn.jsdelivr.net/gh/lanternook/iptv@main/output/curated.txt
+-    直连 raw         -        https://raw.githubusercontent.com/lanternook/iptv/main/output/curated.txt   # 网络失败: _ssl.c:1015: The handshake operation timed out
+
+主地址: https://ghfast.top/https://raw.githubusercontent.com/lanternook/iptv/main/output/curated.txt
+备用地址: https://gh-proxy.com/github.com/lanternook/iptv/raw/main/output/curated.txt
+备用地址: https://cdn.jsdelivr.net/gh/lanternook/iptv@main/output/curated.txt
