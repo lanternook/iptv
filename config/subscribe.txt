@@ -4,11 +4,14 @@
 
 https://raw.githubusercontent.com/Kimentanm/aptv/master/m3u/iptv.m3u
 https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u
+https://raw.githubusercontent.com/zhumeng11/IPTV/main/IPTV.m3u
 https://raw.githubusercontent.com/wwb521/live/main/tv.m3u
 https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.m3u
+https://raw.githubusercontent.com/YanG-1989/m3u/main/Gather.m3u
+https://raw.githubusercontent.com/ssili126/tv/main/itvlist.txt
 https://raw.githubusercontent.com/zbefine/iptv/main/iptv.m3u
 
-# 纯 IPv6 源：Actions 运行机无 IPv6，测速必失败，默认不启用
+# 纯 IPv6 源：Actions 运行机无 IPv6，默认不启用
 # https://raw.githubusercontent.com/fanmingming/live/main/tv/m3u/ipv6.m3u
 
 [WHITELIST]
