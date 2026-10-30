@@ -12,11 +12,22 @@
 """
 import argparse
 import os
+import re
 import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+
+CCTV_RE = re.compile(r"^CCTV-(\d+)(\+?)")
+
+
+def cctv_key(name, rank):
+    """央视按台号自然序排前面；非央视保持底表相对顺序。"""
+    m = CCTV_RE.match(name)
+    if m:
+        return (0, int(m.group(1)), 1 if m.group(2) else 0, 0)
+    return (1, 0, 0, rank.get(name, 0))
 
 
 def parse_groups(path):
@@ -110,6 +121,10 @@ def main():
                 order.append(n)
             if u not in bucket[n]:
                 bucket[n].append(u)
+
+        # 央视按台号自然序（1,2,...,5,5+,6...），其余保持原相对顺序
+        rank = {n: i for i, n in enumerate(order)}
+        order.sort(key=lambda n: cctv_key(n, rank))
 
         out = []
         gw_hit = 0
