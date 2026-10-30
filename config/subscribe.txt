@@ -1,0 +1,16 @@
+# 社区订阅源清单（每行一个地址；# 开头为注释）
+# 2026-10-30 实测可达；CCTV 命中数为前 4KB 采样值，仅供排序参考
+# 单个源可追加 UA 指定请求头：https://xxx.m3u UA="okhttp/3.15"
+
+https://raw.githubusercontent.com/Kimentanm/aptv/master/m3u/iptv.m3u
+https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u
+https://raw.githubusercontent.com/wwb521/live/main/tv.m3u
+https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.m3u
+https://raw.githubusercontent.com/zbefine/iptv/main/iptv.m3u
+
+# 纯 IPv6 源：Actions 运行机无 IPv6，测速必失败，默认不启用
+# https://raw.githubusercontent.com/fanmingming/live/main/tv/m3u/ipv6.m3u
+
+[WHITELIST]
+# 此处填写"订阅源地址"白名单（该源的全部接口不测速、保留在结果最前）。
+# 频道级白名单写在 config/user_demo.txt 的地址后加 $!
