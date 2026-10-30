@@ -1,4 +1,25 @@
-# 这是接口黑名单列表，符合关键字的接口将被拦截，一个关键字一行
-# This is the interface blacklist list, the interface matching the keyword will be blocked, one keyword line
+# 接口黑名单：URL 命中任一关键字的接口直接拦截，一行一个
+# 依据：2026-10-30 在移动家宽下逐条实测，下列 host 全部 0 Mbps（死链或跨境不可达）
+
+# 美国中转源（海外能连通，国内移动绕行必卡）
+74.91.26.218
+198.204.
+69.30.245.
+38.75.136.137
+
+# 跨省移动 OTT：黑龙江移动源，湖北移动访问实测全部 0 Mbps
+ottrrs.hl.chinamobile.com
+
+# 腾讯云 live.php 聚合接口：覆盖 19 个央视台但实测全部 0
+101.35.240.114
+
+# 欧洲中转
+tvbox6.icu
+
+# 其他实测 0 速率的转播/代理
+www.zz49.top
+39.135.138.58
+
+# 上游默认项
 /audio/
 bxtv.3a.ink
