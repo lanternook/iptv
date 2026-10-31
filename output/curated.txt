@@ -1,4 +1,5 @@
 央视频道,#genre#
+CCTV-1,http://ali-m-l.cztv.com/channels/lantian/channel16/1080p.m3u8
 CCTV-1,http://120.40.39.246:352/newlive/live/hls/1/live.m3u8
 CCTV-1,http://219.147.245.238:25480/newlive/live/hls/1/live.m3u8
 CCTV-1,http://118.122.144.115:8888/newlive/live/hls/1/live.m3u8
