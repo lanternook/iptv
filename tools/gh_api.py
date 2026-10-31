@@ -27,16 +27,32 @@ def _opener(proxy):
     return urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
-def _candidates():
-    """返回按优先级尝试的代理列表：环境变量 > 直连 > 本机 Clash。
+def _port_open(host, port, timeout=0.4):
+    import socket
+    s = socket.socket()
+    s.settimeout(timeout)
+    try:
+        s.connect((host, port))
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+    finally:
+        s.close()
 
-    新机器通常没有本地代理，直连能通就直接用；只有本机这种被墙环境才回退到 7897。
+
+def _candidates():
+    """返回按优先级尝试的通道。
+
+    本机装了 Clash（7897 可连）就优先走代理；新机器没代理则直连。
+    GITHUB_PROXY=none 强制直连，GITHUB_PROXY=<url> 强制指定。
     """
     if PROXY.lower() in ("none", "direct", "0"):
         return [None]
     if PROXY:
         return [PROXY]
-    return [None, LOCAL_PROXY]
+    if _port_open("127.0.0.1", 7897):
+        return [LOCAL_PROXY, None]
+    return [None]
 
 
 def token():
@@ -68,9 +84,21 @@ def call(method, path, body=None, timeout=30):
             req.add_header("Content-Type", "application/json")
         try:
             with _opener(proxy).open(req, timeout=timeout) as r:
-                return r.status, r.read().decode("utf-8", "replace")
+                body = r.read().decode("utf-8", "replace")
+                if url.startswith(API):
+                    try:
+                        json.loads(body)
+                    except Exception:  # noqa: BLE001
+                        # 被劫持/重定向后的 HTML，换个通道再来
+                        last = RuntimeError("非 JSON 响应（疑似被劫持）")
+                        continue
+                return r.status, body
         except urllib.error.HTTPError as e:
-            # 服务端已应答（401/403/404 等），换代理无意义，直接返回
+            if e.code in (301, 302, 303, 307, 308):
+                # 直连被劫持/重定向（PUT 不会自动跟随），换下一个通道
+                last = e
+                continue
+            # 服务端已正常应答（401/403/404 等），换代理无意义
             return e.code, e.read().decode("utf-8", "replace")
         except Exception as e:  # noqa: BLE001  连接层失败才换下一个
             last = e
