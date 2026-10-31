@@ -15,8 +15,28 @@ import sys
 import urllib.error
 import urllib.request
 
-PROXY = os.environ.get("GITHUB_PROXY", "http://127.0.0.1:7897")
+PROXY = os.environ.get("GITHUB_PROXY", "")   # 空=自动；填 none=强制直连
+LOCAL_PROXY = "http://127.0.0.1:7897"
 API = "https://api.github.com"
+
+
+def _opener(proxy):
+    if proxy:
+        return urllib.request.build_opener(
+            urllib.request.ProxyHandler({"https": proxy, "http": proxy}))
+    return urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
+def _candidates():
+    """返回按优先级尝试的代理列表：环境变量 > 直连 > 本机 Clash。
+
+    新机器通常没有本地代理，直连能通就直接用；只有本机这种被墙环境才回退到 7897。
+    """
+    if PROXY.lower() in ("none", "direct", "0"):
+        return [None]
+    if PROXY:
+        return [PROXY]
+    return [None, LOCAL_PROXY]
 
 
 def token():
@@ -31,26 +51,30 @@ def token():
 
 
 def opener():
-    h = urllib.request.ProxyHandler({"https": PROXY, "http": PROXY})
-    return urllib.request.build_opener(h)
+    return _opener(_candidates()[0])
 
 
 def call(method, path, body=None, timeout=30):
     url = path if path.startswith("http") else API + path
     data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(url, data=data, method=method)
-    req.add_header("Authorization", "Bearer " + token())
-    req.add_header("Accept", "application/vnd.github+json")
-    req.add_header("X-GitHub-Api-Version", "2022-11-28")
-    req.add_header("User-Agent", "iptv-url-gen")
-    if data:
-        req.add_header("Content-Type", "application/json")
-    try:
-        with opener().open(req, timeout=timeout) as r:
-            raw = r.read().decode("utf-8", "replace")
-            return r.status, raw
-    except urllib.error.HTTPError as e:
-        return e.code, e.read().decode("utf-8", "replace")
+    last = None
+    for proxy in _candidates():
+        req = urllib.request.Request(url, data=data, method=method)
+        req.add_header("Authorization", "Bearer " + token())
+        req.add_header("Accept", "application/vnd.github+json")
+        req.add_header("X-GitHub-Api-Version", "2022-11-28")
+        req.add_header("User-Agent", "iptv-url-gen")
+        if data:
+            req.add_header("Content-Type", "application/json")
+        try:
+            with _opener(proxy).open(req, timeout=timeout) as r:
+                return r.status, r.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:
+            # 服务端已应答（401/403/404 等），换代理无意义，直接返回
+            return e.code, e.read().decode("utf-8", "replace")
+        except Exception as e:  # noqa: BLE001  连接层失败才换下一个
+            last = e
+    return 0, "连接失败（直连与本地代理都不通）: %s" % last
 
 
 def main():
