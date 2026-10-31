@@ -1,0 +1,15 @@
+{
+  "user": "lanternook",
+  "repo": "iptv",
+  "branch": "main",
+  "token_file": "tools/token.txt",
+  "message": "curated: 自动刷新",
+  "files": [
+    "output/curated.txt",
+    "output/rates.tsv"
+  ],
+  "mirrors": [
+    "https://ghfast.top/https://raw.githubusercontent.com/{user}/{repo}/{branch}/{path}",
+    "https://gh-proxy.com/github.com/{user}/{repo}/raw/{branch}/{path}"
+  ]
+}
