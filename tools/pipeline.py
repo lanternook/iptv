@@ -157,6 +157,9 @@ def main():
         if n < MIN_KEEP:
             log("  !! 仅 %d 条，判定异常，不推送" % n)
             return 3
+        # 网关线路按「目标机所在网络」实测优先级重排（编号方案随网关不同，见 reorder_gateways.py）
+        log("  按移动网络实测优先级重排网关线路")
+        run([PY, os.path.join(HERE, "reorder_gateways.py")], logfile, ("已重排", "无变化"))
 
     # ---------- 体检（本机测现有线路） ----------
     elif mode == "check":
