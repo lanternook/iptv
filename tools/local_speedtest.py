@@ -329,29 +329,34 @@ def main():
             body, _ = http_get(u, 20, max_bytes=None, use_proxy=True)
             txt = body.decode("utf-8", "replace")
 
-        groups, cur, meta = [], None, []
-        for line in txt.splitlines():
-            s = line.strip()
-            if not s:
-                continue
-            if "#genre#" in s:
-                name = s.split(",")[0]
-                if "更新时间" in name:
-                    meta.append(s)
-                    cur = "__META__"
+        if "#genre#" not in txt:
+            # 扁平池（如 output/pool.txt，只有 name,url）：按模板归类
+            log("输入无分组头，按模板归类")
+            groups, meta = group_by_template(parse_playlist(txt))
+        else:
+            groups, cur, meta = [], None, []
+            for line in txt.splitlines():
+                s = line.strip()
+                if not s:
                     continue
-                cur = name
-                groups.append([name, []])
-                continue
-            if "," in s:
-                if cur == "__META__":
-                    meta.append(s)
+                if "#genre#" in s:
+                    name = s.split(",")[0]
+                    if "更新时间" in name:
+                        meta.append(s)
+                        cur = "__META__"
+                        continue
+                    cur = name
+                    groups.append([name, []])
                     continue
-                if cur:
-                    n, u = s.split(",", 1)
-                    u = u.strip()
-                    if u.lower().startswith(("http", "rtmp", "rtsp")):
-                        groups[-1][1].append((n.strip(), u))
+                if "," in s:
+                    if cur == "__META__":
+                        meta.append(s)
+                        continue
+                    if cur:
+                        n, u = s.split(",", 1)
+                        u = u.strip()
+                        if u.lower().startswith(("http", "rtmp", "rtsp")):
+                            groups[-1][1].append((n.strip(), u))
 
     if a.extra:
         extra_items = parse_playlist(open(a.extra, encoding="utf-8").read())
