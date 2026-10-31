@@ -1,62 +1,59 @@
 # iptv —— 直播源订阅
 
-本机工具链：源池 → 本机移动家宽实测 → 精选 `curated.txt`，供 Android 7 电视盒 FongMi/TV 订阅。
+供 Android 7 电视盒 FongMi/TV 订阅。仓库仅作静态托管，**云端 Actions 已停用**，订阅只由本机维护后推送。
 
-> **完整手册已归档**：`E:\workbuddy\.workbuddy\memory\archive\iptv.md`（根因分析、踩坑清单、全部工具说明）。
-> 本文件只保留当前状态与日常操作。
-
-## 当前订阅地址
+## 订阅地址
 
 ```
 主   https://gh-proxy.com/github.com/lanternook/iptv/raw/main/output/curated.txt
 备   https://ghfast.top/https://raw.githubusercontent.com/lanternook/iptv/main/output/curated.txt
 ```
 
-仓库 https://github.com/lanternook/iptv ，**仅作静态托管**：工作流 `Update playlist` 已于 2026-10-31 停用
-（`disabled_manually`，文件保留在 `.github/workflows/update-cron.yml`，需要时在 Actions 页点 Enable 可恢复）。
-`curated.txt` 只由本机测速后手动推送更新，仓库不再有任何自动行为。
+## 入口
 
-## 两个文件的分工
+| 文件 | 说明 |
+|---|---|
+| `update.bat` | **主入口**。双击即跑：体检 → 换血 → 推送 → 校验 |
+| `refresh.bat` | 历史入口名，**功能与 update.bat 完全一致**（内部直接转调 update.bat），保留仅为兼容旧习惯 |
 
-| 文件 | 作用 | 更新 |
-|---|---|---|
-| `output/curated.txt` | **实测精选，唯一订阅**（96 条） | 本机测速后手动推 |
-| `output/tv_result.txt` | 电视端实测底表，合并时用 | 换网络/换环境重测后推 |
+两者都接受相同参数：
 
-## 定稿状态（2026-10-31）
-
-- 96 条 / 央视 18 台 42 条 + 卫视 35 台 52 条（含广州综合），凤凰与广东组已按实测删除
-- 央视 17 台首条走湖北移动网关 `120.40.39.246:352`（同省，延迟低），咪咕为备选；CCTV-17 网关号 18
-- **网关编号 ≠ 台号**：实测 CCTV-1~6 对齐，CCTV-9 起错位（CCTV-9→hls/10，CCTV-17→hls/18）。正确映射见 `config/extra_hubei.txt`
-- `config/url_blacklist.txt` 8 条关键字：过滤 TVU 彩条测试卡、编号错位的 txiptv tsfile 流、无法验证的短链
-- 网关频道号会变，失效时重跑 `tools/enum_hls.py` 核对
-
-## 日常操作
-
-```bash
-cd E:/workbuddy/iptv
-python tools/local_speedtest.py --from-subscribe --extra config/extra_hubei.txt --seconds 3   # 重建，约 5 分钟
-python tools/merge_tv.py --drop-group 凤凰频道 --drop-group 广东频道 --move 广州综合=卫视频道   # 以电视实测为底合并网关
-python tools/push_file.py output/curated.txt --message "curated: 刷新"
-python tools/verify_feed.py                                                                    # 推送后校验（等 5 分钟再跑）
+```bat
+update.bat                :: 默认：体检现有线路 + 换血 + 推送（约 2 分钟）
+update.bat --dry          :: 只预览，不写文件不推送
+update.bat --no-push      :: 生成但不上传
+update.bat --apply output\measured.txt   :: 用测速机结果换血（约 10 秒）
+update.bat --rebuild      :: 全量重建：联网抓源池 + 全量测速（5~10 分钟）
+update.bat --rebuild --from-pool          :: 用本地 output\pool.txt 全量测速，不联网抓源
 ```
 
-## 三条硬规则
+## 架构一句话
 
-1. 测速必须在本机直连做，云端结果对国内无参考价值。
-2. HLS 测速要解析到 `.ts` 分片，采样 3 秒（2 秒会误判启动慢的源）。
-3. 推送后镜像有约 5 分钟缓存，核对内容要比起 md5，不能只看 HTTP 200。
+**体检 + 换血**，不是重建。日常只测 `output/curated.txt` 里现有的线路，失效的从 `rates.tsv`（无则 `pool.txt`）补，其余保持原样（网关置首、顺序、分组都不动）。
+
+- 测速机（与电视同网络）：双击 `handoff\check.bat`，只测速，产出 `measured.txt`
+- 维护机：`update.bat --apply output\measured.txt` 换血并推送
+
+## 文档
+
+- **操作说明**：`docs/操作说明.md`（步骤、脚本职责、故障处理）
+- 测速机包说明：`handoff/README.md`
+- 完整手册（含根因分析、踩坑清单）：`E:\workbuddy\.workbuddy\memory\archive\iptv.md`
 
 ## 目录
 
 ```
-config/     模板、订阅源、黑名单、网关映射
-tools/      测速/合并/枚举/校验/推送 全套脚本（token.txt 已 gitignore）
-output/     精选结果、电视端底表、源池快照（pool.txt）
-handoff/    交接包源目录（可拷到其他环境跑测速）
-dist/       交接包 zip
-old/        【仓库内】已停用的上游 iptv-api 源码与云端 Actions 产物，仅作存档不参与流程
+update.bat / refresh.bat   双击入口（refresh 转调 update）
+config/                    模板、订阅源、网关映射、黑名单、推送配置 publish.json
+tools/                     全部脚本（pipeline.py 为调度中心）
+output/                    curated.txt（订阅）、measured.txt、rates.tsv、pool.txt、logs/
+docs/                      操作说明
+handoff/ + dist/*.zip      测速机交接包
+old/                       【仓库内】已停用的上游源码，不参与流程
 ```
 
-> 仓库侧同样只有上面前五项参与流程，其余全部在 `old/`。
-> 若某天要恢复云端跑批：在 Actions 页 Enable 工作流，并把 `old/` 里的源码移回根目录。
+## 三条硬规则
+
+1. 测速必须直连，不走代理，不边测边看视频。
+2. HLS 要解析到 `.ts` 分片再计时，采样 3 秒。
+3. 推送后镜像有约 5 分钟缓存，核对要比 md5/字节数。
