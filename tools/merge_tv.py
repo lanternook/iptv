@@ -60,6 +60,13 @@ def main():
     ap.add_argument("--per-channel", type=int, default=6)
     ap.add_argument("--drop-group", action="append", default=[], help="整组丢弃，如 --drop-group 凤凰频道")
     ap.add_argument("--move", action="append", default=[], help="台名=目标分组，如 --move 广州综合=卫视频道")
+    ap.add_argument("--rates", default=os.path.join(ROOT, "output", "rates.tsv"),
+                    help="测速速率表（name\\tmbps\\turl），由 local_speedtest.py 生成")
+    ap.add_argument("--min-mbps", type=float, default=2.0,
+                    help="严格组的速率门槛，低于此值的线路丢弃")
+    ap.add_argument("--strict-group", action="append", default=["卫视"],
+                    help="启用速率过滤的分组关键字，可多次；默认 卫视")
+    ap.add_argument("--no-filter", action="store_true", help="关闭速率过滤，全量输出")
     a = ap.parse_args()
 
     moves = {}
@@ -81,6 +88,31 @@ def main():
     if bad:
         print("URL 黑名单 %d 条" % len(bad))
 
+    # 速率表：URL -> Mbps，用于严格组的低速率过滤；同时按台名聚合供回补
+    rates = {}
+    by_name = {}
+    if not a.no_filter and os.path.exists(a.rates):
+        for line in open(a.rates, encoding="utf-8"):
+            if line.startswith("#") or not line.strip():
+                continue
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) >= 3:
+                try:
+                    m = float(parts[1])
+                except ValueError:
+                    continue
+                u = parts[2].strip()
+                rates[u] = m
+                by_name.setdefault(parts[0].strip(), []).append((m, u))
+        for k in by_name:
+            by_name[k].sort(reverse=True)
+        print("速率表 %d 条（门槛 %.1f Mbps）" % (len(rates), a.min_mbps))
+    elif not a.no_filter:
+        print("!! 未找到速率表 %s，本次不做速率过滤" % a.rates)
+
+    def is_strict(gname):
+        return not a.no_filter and any(k in gname for k in a.strict_group)
+
     tv = parse_groups(a.tv)
     gw = {}
     for _gname, _items in parse_groups(a.gw):
@@ -92,6 +124,8 @@ def main():
     lines = ["🕘️更新时间,#genre#",
              "%s,https://example.com/ping" % time.strftime("%Y-%m-%d %H:%M:%S")]
     stat = []
+    dropped_low = []
+    rescued = []
     # 先把要迁移的台从原组摘出来
     moved = {}
     for gname, items in tv:
@@ -128,18 +162,40 @@ def main():
 
         out = []
         gw_hit = 0
+        strict = is_strict(gname)
+        low_drop = []
         for n in order:
             urls = bucket[n]
             if n in gw:
                 g = gw[n]
                 urls = [g] + [u for u in urls if u != g]
                 gw_hit += 1
-            for u in urls[: a.per_channel]:
+            picked = []
+            for u in urls:
+                # 有速率记录且低于门槛 -> 丢弃；无记录的不误杀
+                if strict and u in rates and rates[u] < a.min_mbps:
+                    continue
+                picked.append(u)
+                if len(picked) >= a.per_channel:
+                    break
+            if strict and not picked:
+                # 底表内全不达标：从速率表里回补该台达标的线路，避免误杀
+                alts = [u for m, u in by_name.get(n, [])
+                        if m >= a.min_mbps and not banned(u) and u not in picked]
+                picked = alts[: a.per_channel]
+                if picked:
+                    rescued.append(n)
+            if strict and not picked:
+                low_drop.append(n)
+                continue
+            for u in picked:
                 out.append("%s,%s" % (n, u))
         if out:
             lines.append("%s,#genre#" % gname)
             lines.extend(out)
-        stat.append((gname, len(order), len(out), gw_hit))
+        stat.append((gname, len(order), len(out), gw_hit, len(low_drop)))
+        if low_drop:
+            dropped_low.extend(low_drop)
 
     # 目标分组不存在的迁移项，单独补一组
     for tgt, items in moved.items():
@@ -158,8 +214,14 @@ def main():
 
     open(a.out, "w", encoding="utf-8").write("\n".join(lines) + "\n")
     print("写入 %s" % a.out)
-    for g, ch, ln, hit in stat:
-        print("  %-10s %2d 台 %3d 条  网关优先 %d 台" % (g, ch, ln, hit))
+    for g, ch, ln, hit, drop in stat:
+        tail = "  低速率丢弃 %d 台" % drop if drop else ""
+        print("  %-10s %2d 台 %3d 条  网关优先 %d 台%s" % (g, ch, ln, hit, tail))
+    if dropped_low:
+        print("  丢弃台（无任何达标线路，<%.1f Mbps）: %s" % (a.min_mbps, ",".join(dropped_low)))
+    if rescued:
+        print("  回补台（底表线路不达标，改用速率表线路）%d 台: %s"
+              % (len(rescued), ",".join(rescued)))
     if missing:
         print("  网关补充（电视端缺失）: %s" % ",".join(missing))
     print("总条数 %d" % (len(lines) - 2))
