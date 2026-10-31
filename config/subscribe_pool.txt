@@ -1,0 +1,6 @@
+# 外部聚合池（每行一个源；# 开头为注释）
+# 与 subscribe.txt 的区别：这里放"量大但杂"的聚合源，抓下来只保留
+# 模板（config/user_demo.txt）里有的频道名，不会拖慢测速。
+# 每次运行都会重新抓取；某条失效只打印 ERR，不影响其它源。
+
+https://raw.githubusercontent.com/big-mouth-cn/tv/main/iptv.m3u
