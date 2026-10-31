@@ -80,6 +80,8 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--seconds", type=float, default=3.0)
     ap.add_argument("--pull", action="store_true", help="先从 GitHub 拉最新订阅再测")
+    ap.add_argument("--serial-host", action="append", default=["120.40.39.246"],
+                    help="这些 host 的线路串行测（网关并发会被限流误判）；可多次")
     a = ap.parse_args()
 
     if not a.src:
@@ -99,19 +101,36 @@ def main():
     t0 = time.time()
     results = {}
     done = 0
+
+    def record(it, mbps, note):
+        nonlocal done
+        results[(it[0], it[1])] = (mbps, note)
+        done += 1
+        if done % 25 == 0 or done == len(flat):
+            ok = sum(1 for v in results.values() if v[0] >= a.min_mbps)
+            log("  进度 %d/%d  可用 %d  已用 %.0fs" % (done, len(flat), ok, time.time() - t0))
+
+    # 网关类 host 串行测：单 IP 转发服务，并发会被限流而误判为死链
+    serial = [it for it in flat if any(h in it[1] for h in a.serial_host)]
+    parallel = [it for it in flat if it not in set(serial)]
+    if serial:
+        log("  串行测 %d 条（网关类，避免并发限流误判）" % len(serial))
+        for it in serial:
+            try:
+                _n, _u, mbps, note = measure(it, a.seconds, None)
+            except Exception as e:  # noqa: BLE001
+                mbps, note = 0.0, type(e).__name__
+            record(it, mbps, note)
+
     with ThreadPoolExecutor(max_workers=a.workers) as pool:
-        futs = {pool.submit(measure, it, a.seconds, None): it for it in flat}
+        futs = {pool.submit(measure, it, a.seconds, None): it for it in parallel}
         for fut in futs:
             it = futs[fut]
             try:
-                n, u, mbps, note = fut.result()
+                _n, _u, mbps, note = fut.result()
             except Exception as e:  # noqa: BLE001
-                n, u, mbps, note = it[0], it[1], 0.0, type(e).__name__
-            results[(n, u)] = (mbps, note)
-            done += 1
-            if done % 25 == 0 or done == len(flat):
-                ok = sum(1 for v in results.values() if v[0] >= a.min_mbps)
-                log("  进度 %d/%d  可用 %d  已用 %.0fs" % (done, len(flat), ok, time.time() - t0))
+                mbps, note = 0.0, type(e).__name__
+            record(it, mbps, note)
 
     # 输出：可用的保持原顺序；报告写全部
     lines, report = [], ["# 台名\tMbps\t备注\tURL"]
