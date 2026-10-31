@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import urllib.parse
+import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -67,6 +68,25 @@ def push_one(path, repo, branch, message):
     return 1
 
 
+def purge_cdn(repo, branch, repo_path):
+    """清 jsDelivr 缓存。播放器订阅走 jsDelivr，不清会继续发旧文件（最长 12 小时）。"""
+    url = "https://purge.jsdelivr.net/gh/%s@%s/%s" % (repo, branch, urllib.parse.quote(repo_path))
+    try:
+        import socket
+        px = None
+        s = socket.socket()
+        if s.connect_ex(("127.0.0.1", 7897)) == 0:
+            px = "http://127.0.0.1:7897"
+        s.close()
+        op = urllib.request.build_opener(*([urllib.request.ProxyHandler({"http": px, "https": px})]
+                                           if px else [urllib.request.ProxyHandler({})]))
+        raw = op.open(url, timeout=40).read().decode("utf-8", "replace")
+        ok = '"status": "finished"' in raw or '"status":"finished"' in raw
+        print("  缓存已清（jsDelivr %s）" % ("OK" if ok else "返回未知"))
+    except Exception as e:  # noqa: BLE001
+        print("  缓存清理失败（不影响推送）：%s" % type(e).__name__)
+
+
 def main():
     cfg = load_cfg()
     ap = argparse.ArgumentParser()
@@ -79,7 +99,10 @@ def main():
     targets = [a.path] if a.path else (cfg.get("files") or ["output/curated.txt"])
     rc = 0
     for p in targets:
-        rc |= push_one(p, a.repo, a.branch, a.message)
+        r = push_one(p, a.repo, a.branch, a.message)
+        rc |= r
+        if r == 0:
+            purge_cdn(a.repo, a.branch, p)
     return rc
 
 
