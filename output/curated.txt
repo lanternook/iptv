@@ -78,11 +78,11 @@ CCTV-13,http://120.40.39.246:352/newlive/live/hls/14/live.m3u8
 CCTV-13,http://219.147.245.238:25480/newlive/live/hls/14/live.m3u8
 CCTV-13,http://118.122.144.115:8888/newlive/live/hls/13/live.m3u8
 CCTV-13,http://125.93.74.27:9002/tsfile/live/0013_1.m3u8?key=txiptv&playlive=1&authid=0
+CCTV-14,https://event.pull.hebtv.com/jishi/cp2.m3u8
 CCTV-14,http://183.250.156.180:9999/newlive/live/hls/14/live.m3u8
 CCTV-14,http://120.40.39.246:352/newlive/live/hls/15/live.m3u8
 CCTV-14,http://219.147.245.238:25480/newlive/live/hls/15/live.m3u8
 CCTV-14,http://118.122.144.115:8888/newlive/live/hls/14/live.m3u8
-CCTV-14,https://event.pull.hebtv.com/jishi/cp2.m3u8
 CCTV-14,http://218.13.170.98:9901/tsfile/live/0014_1.m3u8?key=txiptv&playlive=1&authid=0
 CCTV-14,http://125.93.74.27:9002/tsfile/live/0014_1.m3u8?key=txiptv&playlive=1&authid=0
 CCTV-15,http://183.250.156.180:9999/newlive/live/hls/15/live.m3u8
