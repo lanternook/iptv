@@ -270,6 +270,10 @@ def main():
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--seconds", type=float, default=SAMPLE_SECONDS)
     ap.add_argument("--limit", type=int, default=0, help="只测前 N 条，用于快速试跑")
+    ap.add_argument("--strict-group", action="append", default=["卫视"],
+                    help="该组不保底：全台低于门槛就整台丢弃，可多次；默认 卫视")
+    ap.add_argument("--rates", default=os.path.join(ROOT, "output", "rates.tsv"),
+                    help="速率索引输出路径，供 merge_tv.py 过滤用")
     a = ap.parse_args()
 
     global OUT
@@ -383,16 +387,22 @@ def main():
                      % time.strftime("%Y-%m-%d %H:%M:%S"))
     kept = total = 0
     summary = []
+    dropped_low = []
     for gi, g in enumerate(groups):
         chans = by_group.get(gi, {})
         rank = tmpl_rank.get(gi, {})
+        strict = any(k in g[0] for k in a.strict_group)
         out_lines = []
         for n in sorted(chans.keys(), key=lambda x: rank.get(x, 1 << 30)):
             items = chans[n]
             items.sort(key=lambda x: -x[0])
             good = [x for x in items if x[0] >= a.min_mbps][: a.per_channel]
-            if not good and items:
-                good = items[:1]  # 全不达标也留最快一条，避免整台消失
+            if not good and items and not strict:
+                good = items[:1]  # 非严格组全不达标也留最快一条，避免整台消失
+            if not good:
+                if items:
+                    dropped_low.append("%s(%.2f)" % (n, items[0][0]))
+                continue
             for mbps, u, _ in good:
                 out_lines.append("%s,%s" % (n, u))
                 kept += 1
@@ -405,9 +415,22 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 
+    # 速率索引：merge_tv.py 据此过滤低速率线路
+    try:
+        os.makedirs(os.path.dirname(a.rates), exist_ok=True)
+        with open(a.rates, "w", encoding="utf-8") as f:
+            f.write("# name\tmbps\turl\n")
+            for _gi, n, u, mbps, _note in results:
+                f.write("%s\t%.3f\t%s\n" % (n, mbps, u))
+    except Exception as e:  # noqa: BLE001
+        log("速率表写入失败: %s" % e)
+
     log("-" * 56)
     for gname, ch, ln in summary:
         log("  %-10s %2d 台  %3d 条" % (gname, ch, ln))
+    if dropped_low:
+        log("  严格组丢弃 %d 台（<%.1f Mbps）: %s"
+            % (len(dropped_low), a.min_mbps, ",".join(dropped_low)))
     log("保留 %d 条（原始 %d 条），耗时 %.0f 秒" % (kept, len(flat), time.time() - t_all))
     log("已写入 %s" % OUT)
 
