@@ -174,20 +174,54 @@ def parse_playlist(text):
     return items
 
 
-def build_from_subscribe():
-    """直接从 config/subscribe.txt 的源建池（绕过云端测速淘汰，能捞回被误杀的国内好源）。"""
-    sub = os.path.join(ROOT, "config", "subscribe.txt")
-    urls = [l.strip().split()[0] for l in open(sub, encoding="utf-8")
-            if l.strip() and not l.strip().startswith(("#", "["))]
-    allitems = []
-    for u in urls:
+def fetch_source(u, timeout=25):
+    """抓订阅源，直连失败自动走镜像。返回 (text, 镜像名)。"""
+    cands = [("直连", u)]
+    if "raw.githubusercontent.com/" in u:
+        rest = u.split("raw.githubusercontent.com/", 1)[1]
+        cands.append(("ghfast", "https://ghfast.top/https://raw.githubusercontent.com/" + rest))
+        cands.append(("gh-proxy", "https://gh-proxy.com/https://raw.githubusercontent.com/" + rest))
+    last = None
+    for tag, url in cands:
         try:
-            body, _ = http_get(u, 25, max_bytes=None, use_proxy=True)
-            got = parse_playlist(body.decode("utf-8", "replace"))
-            allitems.extend(got)
-            log("  %-4d 条  %s" % (len(got), u.rsplit("/", 1)[-1]))
+            body, _ = http_get(url, timeout, max_bytes=None, use_proxy=True)
+            if body and len(body) > 200:
+                return body.decode("utf-8", "replace"), tag
         except Exception as e:  # noqa: BLE001
-            log("  ERR      %s (%s)" % (u.rsplit("/", 1)[-1], type(e).__name__))
+            last = e
+    raise last or RuntimeError("空响应")
+
+
+def build_from_subscribe(template_names=None):
+    """从 config/subscribe.txt + subscribe_pool.txt 现场建池。
+
+    订阅源每日更新，每次跑都重新抓，源池才是最新的（不是读静态快照）。
+    聚合池（subscribe_pool.txt）条目量大，只保留模板里有的频道名，避免测速爆炸。
+    """
+    files = ["subscribe.txt", "subscribe_pool.txt"]
+    urls = []
+    for fn in files:
+        p = os.path.join(ROOT, "config", fn)
+        if not os.path.exists(p):
+            continue
+        for l in open(p, encoding="utf-8"):
+            s = l.strip()
+            if s and not s.startswith(("#", "[")):
+                urls.append((fn, s.split()[0]))
+
+    allitems = []
+    for fn, u in urls:
+        try:
+            text, mirror = fetch_source(u)
+            got = parse_playlist(text)
+            raw_n = len(got)
+            if fn == "subscribe_pool.txt" and template_names:
+                got = [(n, x) for n, x in got if norm_channel(n) in template_names]
+            allitems.extend(got)
+            log("  %-5d 条(模板命中 %d)  %-6s %s" % (raw_n, len(got), mirror, u.rsplit("/", 1)[-1][:40]))
+        except Exception as e:  # noqa: BLE001
+            log("  ERR        %-6s %s (%s)" % ("-", u.rsplit("/", 1)[-1][:40], type(e).__name__))
+
     seen, uniq = set(), []
     for n, u in allitems:
         k = (n, u)
@@ -281,8 +315,10 @@ def main():
         OUT = a.out if os.path.isabs(a.out) else os.path.join(ROOT, a.out)
 
     if a.from_subscribe:
-        log("从订阅源直接建池（不走云端测速）:")
-        groups, meta = group_by_template(build_from_subscribe())
+        log("从订阅源现场建池（每次重新抓，源池即最新）:")
+        tpl_groups = load_template_groups()
+        tpl_names = {norm_channel(n) for _g, items in tpl_groups for n in items}
+        groups, meta = group_by_template(build_from_subscribe(tpl_names))
     else:
         if a.src:
             txt = open(a.src, encoding="utf-8", errors="replace").read()
