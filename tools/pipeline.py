@@ -17,11 +17,21 @@
 """
 import argparse
 import json
+import locale
 import os
 import subprocess
 import sys
 import time
 import urllib.request
+
+# 控制台/重定向遇到 GBK 无法编码的字符（如 emoji）时降级，避免崩溃
+try:
+    sys.stdout.reconfigure(errors="replace")
+    sys.stderr.reconfigure(errors="replace")
+except Exception:  # noqa: BLE001
+    pass
+
+ENCODING = locale.getpreferredencoding(False) or "utf-8"   # Windows 中文=cp936
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -46,14 +56,14 @@ def step(n, total, title):
 def run(cmd, logfile, echo_keys=()):
     log("  $ " + " ".join(os.path.basename(c) if i == 0 else c for i, c in enumerate(cmd)))
     t0 = time.time()
+    # 子进程在 Windows 下按系统代码页（GBK）输出，必须按同一编码解码，否则日志乱码
+    p = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out = (p.stdout or b"").decode(ENCODING, errors="replace")
     with open(logfile, "a", encoding="utf-8") as f:
         f.write("\n$ " + " ".join(cmd) + "\n")
-        f.flush()
-        p = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                           text=True, encoding="utf-8", errors="replace")
-        f.write(p.stdout or "")
+        f.write(out)
         f.write("\n[exit %d]\n" % p.returncode)
-    for line in (p.stdout or "").splitlines():
+    for line in out.splitlines():
         if any(k in line for k in echo_keys):
             log("  " + line.strip())
     log("  耗时 %.0fs  退出码 %d" % (time.time() - t0, p.returncode))
@@ -90,6 +100,8 @@ def main():
     ap.add_argument("--apply", default=None, metavar="MEASURED",
                     help="用测速机产出的 measured.txt 换血")
     ap.add_argument("--rebuild", action="store_true", help="全量重建（重抓源池 + 全量测速）")
+    ap.add_argument("--from-pool", action="store_true",
+                    help="配合 --rebuild：用本地 output/pool.txt 当源池，不联网抓源")
     ap.add_argument("--no-push", action="store_true")
     ap.add_argument("--dry", action="store_true", help="只预览，不写文件不推送")
     ap.add_argument("--seconds", type=float, default=3.0)
@@ -115,10 +127,22 @@ def main():
 
     # ---------- 全量重建 ----------
     if a.rebuild:
-        step(1, 3, "拉取源池并全量测速")
-        rc = run([PY, os.path.join(HERE, "local_speedtest.py"), "--from-subscribe",
-                  "--extra", "config/extra_hubei.txt", "--seconds", str(a.seconds),
-                  "--out", "output/measured.txt"], logfile,
+        if a.from_pool:
+            step(1, 3, "用本地源池快照全量测速（不联网抓源）")
+            src = "output/pool.txt"
+            if not os.path.exists(os.path.join(ROOT, src)):
+                log("  找不到 %s，改用联网抓源" % src)
+                a.from_pool = False
+            else:
+                cmd = [PY, os.path.join(HERE, "local_speedtest.py"), "--src", src,
+                       "--extra", "config/extra_hubei.txt", "--seconds", str(a.seconds),
+                       "--out", "output/measured.txt"]
+        if not a.from_pool:
+            step(1, 3, "联网抓取源池并全量测速")
+            cmd = [PY, os.path.join(HERE, "local_speedtest.py"), "--from-subscribe",
+                   "--extra", "config/extra_hubei.txt", "--seconds", str(a.seconds),
+                   "--out", "output/measured.txt"]
+        rc = run(cmd, logfile,
                  ("源池合计", "保留", "央视频道", "卫视频道", "湖北本地", "ERR"))
         if rc != 0:
             log("  测速失败，旧订阅未改动")
