@@ -4,6 +4,7 @@
 # 输入每行：label|url
 # 输出每行：label|Mbps|httpcode|segbytes
 F="$1"
+SEC="${2:-4}"
 [ -z "$F" ] && { echo "no file"; exit 1; }
 while IFS='|' read -r label url; do
   case "$label" in ''|\#*) continue;; esac
@@ -19,7 +20,7 @@ while IFS='|' read -r label url; do
     /*)    ts="$(echo "$url" | sed 's#\(https\?://[^/]*\).*#\1#')$seg" ;;
     *)     ts="$base/$seg" ;;
   esac
-  res=$(curl -s --max-time 4 -o /dev/null -w '%{speed_download} %{http_code} %{size_download}' "$ts")
+  res=$(curl -s --max-time "$SEC" -o /dev/null -w '%{speed_download} %{http_code} %{size_download}' "$ts")
   sp=$(echo "$res" | awk '{printf "%.2f", $1*8/1000000}')
   code=$(echo "$res" | awk '{print $2}')
   sz=$(echo "$res" | awk '{print $3}')
