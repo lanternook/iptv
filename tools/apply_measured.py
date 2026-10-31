@@ -96,6 +96,9 @@ def main():
     ap.add_argument("--min-mbps", type=float, default=0.1, help="补源时的存活线（0.1 = 只要能拉到数据）")
     ap.add_argument("--per-channel", type=int, default=3, help="每台最多保留几条")
     ap.add_argument("--dry", action="store_true", help="只打印变更，不写文件")
+    ap.add_argument("--only-group", action="append", default=["卫视"],
+                    help="只对这些分组换血，其余整组原样保留；默认 卫视（央视走网关，不轻易动）")
+    ap.add_argument("--all-groups", action="store_true", help="所有分组都参与换血（含央视）")
     a = ap.parse_args()
 
     if not os.path.exists(a.curated):
@@ -114,6 +117,14 @@ def main():
     lines, changes = [], []
     kept_n = swap_n = drop_n = 0
     for gname, items in base:
+        # 只对指定分组换血（默认卫视）；其余分组原样保留
+        # 央视走湖北网关，网关并发测容易误判为死链，所以默认不动
+        if not a.all_groups and not any(k in gname for k in a.only_group):
+            lines.append("%s,#genre#" % gname)
+            lines.extend("%s,%s" % (n, u) for n, u in items)
+            kept_n += len(dict.fromkeys(x[0] for x in items))
+            changes.append("[保留] %s：整组不动（%d 条）" % (gname, len(items)))
+            continue
         out = []
         for n in dict.fromkeys(x[0] for x in items):          # 保持原台顺序、去重
             urls = [u for x, u in items if x == n]
