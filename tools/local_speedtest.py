@@ -383,9 +383,10 @@ def main():
         log("追加外部源 %d 条，按模板命中 %d 条" % (len(extra_items), added))
 
     if a.only:
+        # 子串匹配：CCTV 命中 CCTV-1，卫视命中湖南卫视/北京卫视
         want = a.only.upper()
         for g in groups:
-            g[1] = [(n, u) for n, u in g[1] if norm_channel(n).upper().startswith(want)]
+            g[1] = [(n, u) for n, u in g[1] if want in norm_channel(n).upper()]
         log("--only %s 过滤后剩余 %d 条" % (a.only, sum(len(g[1]) for g in groups)))
 
     flat = [(n, u, gi) for gi, g in enumerate(groups) for (n, u) in g[1]]
