@@ -57,6 +57,23 @@ def load_rates(path):
     return by_name
 
 
+def load_pool(path):
+    """源池快照兜底：没有速率表时，按原顺序取该台的候选线路。"""
+    by_name = {}
+    if not os.path.exists(path):
+        return by_name
+    for line in open(path, encoding="utf-8", errors="replace"):
+        s = line.strip()
+        if not s or "#genre#" in s or s.startswith("#"):
+            continue
+        if "," in s:
+            n, u = s.split(",", 1)
+            u = u.strip()
+            if u.lower().startswith(("http", "rtmp", "rtsp")) and "example.com" not in u:
+                by_name.setdefault(n.strip(), []).append(u)
+    return by_name
+
+
 def load_banned():
     p = os.path.join(ROOT, "config", "url_blacklist.txt")
     out = []
@@ -73,6 +90,8 @@ def main():
     ap.add_argument("--curated", default=os.path.join(ROOT, "output", "curated.txt"))
     ap.add_argument("--measured", default=os.path.join(ROOT, "output", "measured.txt"))
     ap.add_argument("--rates", default=os.path.join(ROOT, "output", "rates.tsv"))
+    ap.add_argument("--pool", default=os.path.join(ROOT, "output", "pool.txt"),
+                    help="源池快照，速率表缺失时用它补源")
     ap.add_argument("--out", default=None, help="默认原地覆盖 --curated")
     ap.add_argument("--min-mbps", type=float, default=0.1, help="补源时的存活线（0.1 = 只要能拉到数据）")
     ap.add_argument("--per-channel", type=int, default=3, help="每台最多保留几条")
@@ -87,7 +106,10 @@ def main():
     base = parse(a.curated)
     alive = {(n, u) for _g, items in parse(a.measured) for n, u in items}
     rates = load_rates(a.rates)
+    pool = load_pool(a.pool)
     banned = load_banned()
+    if not rates:
+        print("提示: 无速率表 %s，补源改用源池快照 %s（按原顺序取）" % (a.rates, a.pool))
 
     lines, changes = [], []
     kept_n = swap_n = drop_n = 0
@@ -103,14 +125,19 @@ def main():
                 if dropped:
                     changes.append("[换线] %s：%d 条失效已移除" % (n, dropped))
                 continue
-            # 全部失效：从历史速率表补
+            # 全部失效：先查历史速率表，再退回源池快照
             alts = [u for m, u in rates.get(n, [])
                     if m >= a.min_mbps and not any(k in u for k in banned) and u not in urls]
+            src_tag = "历史达标线路"
+            if not alts:
+                alts = [u for u in pool.get(n, [])
+                        if not any(k in u for k in banned) and u not in urls]
+                src_tag = "源池候选"
             if alts:
                 swap_n += 1
                 out.extend((n, u) for u in alts[: a.per_channel])
-                changes.append("[补源] %s：%d 条旧线路失效，补入 %d 条历史达标线路"
-                               % (n, len(urls), min(len(alts), a.per_channel)))
+                changes.append("[补源] %s：%d 条旧线路失效，补入 %d 条%s"
+                               % (n, len(urls), min(len(alts), a.per_channel), src_tag))
             else:
                 drop_n += 1
                 changes.append("[丢弃] %s：%d 条全部失效且无备用源" % (n, len(urls)))
