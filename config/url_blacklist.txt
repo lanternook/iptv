@@ -15,3 +15,7 @@ tsfile/live/0008_1
 tsfile/live/1014_1
 tsfile/live/1017_1
 tsfile/live/1018_1
+
+# 咪咕 CDN 全线失效（2026-10-31 实测：37 条中 36 条返回 HTTP 605，播放器报 2004 BAD_HTTP_STATUS）
+# 地址带 msisdn 鉴权参数，过期即废；等确认恢复后再从本文件删除此行
+miguvideo.com
