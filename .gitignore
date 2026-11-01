@@ -5,3 +5,8 @@ build/
 tmp/
 __pycache__/
 *.pyc
+
+# 个人配置：不要入库（用 .example.json 作模板）
+config/publish.json
+tools/site.json
+*.local.json

@@ -1,0 +1,7 @@
+{
+  "_comment": "复制为 tools/site.json 后填写你自己的账号，用于本地测速结果回传地址。",
+  "user": "your-github-user",
+  "repo": "your-iptv-repo",
+  "branch": "main",
+  "file": "output/curated.txt"
+}

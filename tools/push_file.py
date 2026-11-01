@@ -91,7 +91,7 @@ def main():
     cfg = load_cfg()
     ap = argparse.ArgumentParser()
     ap.add_argument("path", nargs="?", help="单个文件路径；省略则推 publish.json 里的 files")
-    ap.add_argument("--repo", default="%s/%s" % (cfg.get("user", "lanternook"), cfg.get("repo", "iptv")))
+    ap.add_argument("--repo", default="%s/%s" % (cfg.get("user", "your-github-user"), cfg.get("repo", "iptv")))
     ap.add_argument("--branch", default=cfg.get("branch", "main"))
     ap.add_argument("--message", default=cfg.get("message"))
     a = ap.parse_args()

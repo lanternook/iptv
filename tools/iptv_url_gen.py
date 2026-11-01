@@ -8,10 +8,10 @@ output/iptv_urls.txt，并打印「主地址 / 备用地址」。
 
 用法:
     python tools/iptv_url_gen.py                      # 读取 tools/site.json
-    python tools/iptv_url_gen.py --user lanternook --repo iptv
-    python tools/iptv_url_gen.py --user lanternook --repo iptv --branch master --file output/user_result.txt
+    python tools/iptv_url_gen.py --user your-github-user --repo iptv
+    python tools/iptv_url_gen.py --user your-github-user --repo iptv --branch master --file output/user_result.txt
     python tools/iptv_url_gen.py --no-probe           # 只生成不探测
-    python tools/iptv_url_gen.py --save-user lanternook --save-repo iptv   # 记住参数
+    python tools/iptv_url_gen.py --save-user your-github-user --save-repo iptv   # 记住参数
 
 退出码: 0 至少 1 条通过; 1 全部失败; 2 参数错误
 """

@@ -143,7 +143,7 @@ def cloud_url():
     p = os.path.join(HERE, "site.json")
     cfg = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
     return "https://raw.githubusercontent.com/%s/%s/%s/%s" % (
-        cfg.get("user", "lanternook"), cfg.get("repo", "iptv"),
+        cfg.get("user", "your-github-user"), cfg.get("repo", "iptv"),
         cfg.get("branch", "main"), cfg.get("file", "output/user_result.txt"))
 
 
@@ -425,7 +425,7 @@ def main():
 
     lines = meta[:] if meta else ["🕘️更新时间,#genre#"]
     if not meta:
-        lines.append("%s,https://cdn.jsdelivr.net/gh/lanternook/iptv@main/output/curated.txt"
+        lines.append("%s,https://cdn.jsdelivr.net/gh/your-github-user/your-iptv-repo@main/output/curated.txt"
                      % time.strftime("%Y-%m-%d %H:%M:%S"))
     kept = total = 0
     summary = []

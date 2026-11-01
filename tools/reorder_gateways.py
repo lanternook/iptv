@@ -34,10 +34,15 @@ SHIFT = {"CCTV-1": 1, "CCTV-2": 2, "CCTV-3": 3, "CCTV-4": 4, "CCTV-5": 5,
 # 219.147 的 CCTV-17 在 17（18 是 404），120.40 的在 18
 SHIFT17 = dict(SHIFT, **{"CCTV-17": 17})
 
+# 直编但没有 CCTV-5+：183.250.156.180 的 n16 是 404（抓帧确认 n6=CCTV-6、n13=CCTV-13、n17=CCTV-17）
+DIRECT_NP = dict(DIRECT)
+DIRECT_NP.pop("CCTV-5+", None)
+
 PRIORITY = [
-    ("118.122.144.115:8888", DIRECT),
+    ("183.250.156.180:9999", DIRECT_NP),  # 2026-10-31 晚高峰手机实测 1.6~18.5 Mbps，全场最快
+    ("120.40.39.246:352", SHIFT),      # 湖北移动本地网关，实测回放最稳
     ("219.147.245.238:25480", SHIFT17),
-    ("120.40.39.246:352", SHIFT),
+    ("118.122.144.115:8888", DIRECT),
 ]
 
 GW_PAT = re.compile(r"^https?://[\d.]+:\d+/newlive/live/hls/\d+/live\.m3u8$")

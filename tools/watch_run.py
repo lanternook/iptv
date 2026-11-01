@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """轮询 GitHub Actions 运行状态，结束后打印各步骤结论与失败日志尾部。
 
-用法: python tools/watch_run.py [--repo lanternook/iptv] [--run-id N] [--timeout 3600]
+用法: python tools/watch_run.py [--repo your-github-user/your-iptv-repo] [--run-id N] [--timeout 3600]
 """
 import argparse
 import json
@@ -64,7 +64,7 @@ def raw_logs(repo, job_id):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--repo", default="lanternook/iptv")
+    ap.add_argument("--repo", default="your-github-user/your-iptv-repo")
     ap.add_argument("--run-id", type=int)
     ap.add_argument("--timeout", type=int, default=3600)
     a = ap.parse_args()

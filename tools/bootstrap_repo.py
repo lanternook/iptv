@@ -8,9 +8,9 @@
      （本机 PAT 若没有 Workflows 写权限，git 无法推送 workflow 文件）
 
 用法:
-    python tools/bootstrap_repo.py --user lanternook --repo iptv
-    python tools/bootstrap_repo.py --user lanternook --repo iptv --ref 1.7.2   # 回退旧版（自带 cron 工作流）
-    python tools/bootstrap_repo.py --user lanternook --repo iptv --dry-run     # 只准备目录不推送
+    python tools/bootstrap_repo.py --user your-github-user --repo iptv
+    python tools/bootstrap_repo.py --user your-github-user --repo iptv --ref 1.7.2   # 回退旧版（自带 cron 工作流）
+    python tools/bootstrap_repo.py --user your-github-user --repo iptv --dry-run     # 只准备目录不推送
 """
 import argparse
 import io
@@ -181,8 +181,8 @@ def main():
         print("dry-run: 内容已准备在 %s，未提交" % work)
         return
 
-    run(["git", "config", "user.name", "lanternook"], work)
-    run(["git", "config", "user.email", "lanternook@users.noreply.github.com"], work)
+    run(["git", "config", "user.name", "your-github-user"], work)
+    run(["git", "config", "user.email", "your-github-user@users.noreply.github.com"], work)
     run(["git", "add", "-A"], work)
     p = subprocess.run(["git", "status", "--porcelain"], cwd=work, capture_output=True, text=True)
     if not p.stdout.strip():

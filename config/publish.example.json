@@ -1,6 +1,7 @@
 {
-  "user": "lanternook",
-  "repo": "iptv",
+  "_comment": "复制本文件为 config/publish.json 后填写你自己的账号。config/publish.json 已在 .gitignore 中排除，不会入库。",
+  "user": "your-github-user",
+  "repo": "your-iptv-repo",
   "branch": "main",
   "token_file": "tools/token.txt",
   "message": "curated: 自动刷新",

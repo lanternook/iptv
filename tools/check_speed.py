@@ -53,7 +53,7 @@ def parse(path):
 def pull_remote(dest):
     """从 GitHub 拉最新 curated.txt（镜像自动回退），失败则保留本地。"""
     cfg_path = os.path.join(ROOT, "config", "publish.json")
-    user, repo, branch = "lanternook", "iptv", "main"
+    user, repo, branch = "your-github-user", "iptv", "main"
     if os.path.exists(cfg_path):
         import json
         c = json.load(open(cfg_path, encoding="utf-8"))

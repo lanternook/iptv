@@ -21,7 +21,7 @@ UAS = {
     "ExoPlayer": "ExoPlayerLib/2.19.1",
     "Mozilla": "Mozilla/5.0 (Linux; Android 7.0) AppleWebKit/537.36 Chrome/90 Mobile Safari/537.36",
 }
-USER, REPO, BRANCH, FILE = "lanternook", "iptv", "main", "output/curated.txt"
+USER, REPO, BRANCH, FILE = "your-github-user", "iptv", "main", "output/curated.txt"
 MIRRORS = [
     ("raw", "https://raw.githubusercontent.com/%s/%s/%s/%s" % (USER, REPO, BRANCH, FILE)),
     ("gh-proxy", "https://gh-proxy.com/github.com/%s/%s/raw/%s/%s" % (USER, REPO, BRANCH, FILE)),

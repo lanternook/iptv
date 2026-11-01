@@ -124,13 +124,37 @@ def load_pool(path):
 
 
 def write_pool(path, rows, note="", annot=None):
-    """写池文件。annot 保留已有网关的「编号方案/说明」，避免复验时把人工确认的信息冲掉。"""
+    """写池文件。annot 保留已有网关的「编号方案/说明」，避免复验时把人工确认的信息冲掉。
+
+    合并写入：本次验证出的排前面，池里原有但这次没测到的保留在末尾
+    （本机电信连不上 ≠ 手机移动连不上，不能因为一次本机验证失败就把池清空）。
+    """
     annot = annot or {}
+    seen = set(h for h, _ in rows)
+    keep = []
+    if os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            s = line.strip()
+            if not s or s.startswith("#"):
+                continue
+            p = s.split()
+            if len(p) < 2 or p[0] in seen:
+                continue
+            seen.add(p[0])
+            try:
+                m = float(p[1])
+            except ValueError:
+                m = 0.0
+            scheme = p[2] if len(p) >= 3 else "?"
+            desc = " ".join(p[3:]) if len(p) >= 4 else "本次未测到"
+            keep.append((p[0], m, scheme, desc))
     lines = ["# 同类 IPTV 转发网关池（路径模板 /newlive/live/hls/{N}/live.m3u8）",
              "# 生成：find_gateway.py %s%s" % (time.strftime("%Y-%m-%d %H:%M"), note),
              "# 格式：host:port  速率Mbps  编号方案  说明（编号方案需抓帧确认，? = 未确认）"]
     for h, m in rows:
         scheme, desc = annot.get(h, ("?", "待抓帧确认编号"))
+        lines.append("%s  %.2f  %s  %s" % (h, m, scheme, desc))
+    for h, m, scheme, desc in keep:
         lines.append("%s  %.2f  %s  %s" % (h, m, scheme, desc))
     open(path, "w", encoding="utf-8", newline="\n").write("\n".join(lines) + "\n")
 
