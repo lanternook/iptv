@@ -12,8 +12,8 @@ from collections import Counter, defaultdict
 
 PATH = "output/pool.txt"
 
-# 湖北移动常见公网段（公开分配信息，非精确 BGP 表）
-HUBEI_MOBILE = ("111.4.", "111.47.", "117.150.", "117.151.", "120.36.", "120.37.",
+# xx移动常见公网段（公开分配信息，非精确 BGP 表）
+GW_A_MOBILE = ("111.4.", "111.47.", "117.150.", "117.151.", "120.36.", "120.37.",
                 "120.38.", "120.39.", "120.40.", "120.41.", "120.42.", "120.43.",
                 "211.137.", "223.104.")
 
@@ -43,12 +43,12 @@ def main():
     print("IP 型线路 %d 条，涉及 %d 个 /16 段\n" % (sum(segs.values()), len(segs)))
     print("出现最多的 /16 段：")
     for k, c in segs.most_common(a.top):
-        mark = "  ← 湖北移动段" if k in HUBEI_MOBILE else ""
+        mark = "  ← xx移动段" if k in GW_A_MOBILE else ""
         print("  %-10s %3d 条%s" % (k, c, mark))
 
-    targets = a.seg or [k for k in segs if k in HUBEI_MOBILE]
+    targets = a.seg or [k for k in segs if k in GW_A_MOBILE]
     if not targets:
-        print("\n未指定 --seg，且池内无湖北移动段")
+        print("\n未指定 --seg，且池内无xx移动段")
         return
     print("\n目标段明细：")
     for t in targets:

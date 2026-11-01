@@ -135,21 +135,21 @@ def main():
                 a.from_pool = False
             else:
                 cmd = [PY, os.path.join(HERE, "local_speedtest.py"), "--src", src,
-                       "--extra", "config/extra_hubei.txt", "--seconds", str(a.seconds),
+                       "--extra", "config/extra_gw_a.txt", "--seconds", str(a.seconds),
                        "--out", "output/measured.txt"]
         if not a.from_pool:
             step(1, 3, "联网抓取源池并全量测速")
             cmd = [PY, os.path.join(HERE, "local_speedtest.py"), "--from-subscribe",
-                   "--extra", "config/extra_hubei.txt", "--seconds", str(a.seconds),
+                   "--extra", "config/extra_gw_a.txt", "--seconds", str(a.seconds),
                    "--out", "output/measured.txt"]
         rc = run(cmd, logfile,
-                 ("源池合计", "保留", "央视频道", "卫视频道", "湖北本地", "ERR"))
+                 ("源池合计", "保留", "央视频道", "卫视频道", "xx本地", "ERR"))
         if rc != 0:
             log("  测速失败，旧订阅未改动")
             return rc
         step(2, 3, "合并")
         rc = run([PY, os.path.join(HERE, "merge_tv.py"), "--tv", "output/measured.txt"] + MERGE_ARGS,
-                 logfile, ("总条数", "丢弃台", "回补台", "央视频道", "卫视频道", "湖北本地"))
+                 logfile, ("总条数", "丢弃台", "回补台", "央视频道", "卫视频道", "xx本地"))
         if rc != 0:
             log("  合并失败，旧订阅未改动")
             return rc

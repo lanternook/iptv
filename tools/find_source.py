@@ -21,7 +21,7 @@
   python tools/find_source.py --no-probe           # 跳过本机粗筛（本机没网/在代理后面时）
   python tools/find_source.py --ingest output/phone_result.txt   # 回灌手机结果
 
-手机端（目标机同网，通常是湖北移动）:
+手机端（目标机同网，通常是xx移动）:
   adb push tools/phone_speed.sh /data/local/tmp/
   adb push output/phone_urls_src.txt /data/local/tmp/urls.txt
   adb shell "sh /data/local/tmp/phone_speed.sh /data/local/tmp/urls.txt 3" > output/phone_result.txt

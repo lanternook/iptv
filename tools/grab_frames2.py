@@ -23,8 +23,8 @@ import sys
 
 # ffmpeg 位置（项目内复用 imageio-ffmpeg 的二进制；不存在时退回 PATH 里的 ffmpeg）
 CANDIDATES = [
-    r"E:/workbuddy/tmp/ffmpeg_pkg/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe",
-    r"E:/workbuddy/tools/ffmpeg_pkg/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe",
+    r"tools/ffmpeg_pkg/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe",
+    r"ffmpeg.exe",
 ]
 
 

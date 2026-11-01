@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""phone_speed.py —— 用手机（目标机同网 = 湖北移动）测速，一条命令跑完。
+"""phone_speed.py —— 用手机（目标机同网 = xx移动）测速，一条命令跑完。
 
-为什么必须有这个脚本：本机是**湖北孝感电信**（出口 61.184.164.166），
-目标电视盒子是**湖北孝感移动**（手机 WiFi 出口 111.46.161.239）。
+为什么必须有这个脚本：本机是**xx电信**（出口 xx.xx.xx.xx），
+目标电视盒子是**xx移动**（手机 WiFi 出口 xx.xx.xx.xx）。
 两边对同一批源的排名经常完全相反 —— 本机测出来的「最快」到盒子上可能是 0。
 所以凡是要**排序 / 置首**，必须用手机结果，本机结果只能判活。
 
@@ -25,7 +25,7 @@
           或 `apply_phone_speed.py --result`）
 
 环境要求：
-  - adb 在 E:/workbuddy/tmp/adb-tools/platform-tools/adb.exe（自动探测，也可 --adb 指定）
+  - adb 在 tools/adb-tools/platform-tools/adb.exe（自动探测，也可 --adb 指定）
   - 手机已 USB 连接并授权调试；WiFi 已连（移动宽带）
   - 手机需有 curl / sed / grep / awk（小米9 MIUI 自带）
 """
@@ -41,8 +41,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
 ADB_CANDIDATES = [
-    r"E:/workbuddy/tmp/adb-tools/platform-tools/adb.exe",
-    r"E:/workbuddy/tools/adb-tools/platform-tools/adb.exe",
+    r"tools/adb-tools/platform-tools/adb.exe",
+    r"adb.exe",
 ]
 REMOTE_SH = "/data/local/tmp/phone_speed.sh"
 REMOTE_LIST = "/data/local/tmp/urls.txt"

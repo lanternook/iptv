@@ -3,7 +3,7 @@
 
 用法: python tools/measure_primary.py [轮数] [秒数] [并发]
 输出列: 频道\tmin\tavg\tmax\t判定\tURL
-注意: 本机为湖北电信，结果仅代表电信侧连通性，不代表目标机（湖北移动）体验。
+注意: 本机为xx电信，结果仅代表电信侧连通性，不代表目标机（xx移动）体验。
 """
 import os, sys, io
 HERE = os.path.dirname(os.path.abspath(__file__))

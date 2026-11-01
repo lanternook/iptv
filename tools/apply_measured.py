@@ -118,7 +118,7 @@ def main():
     kept_n = swap_n = drop_n = 0
     for gname, items in base:
         # 只对指定分组换血（默认卫视）；其余分组原样保留
-        # 央视走湖北网关，网关并发测容易误判为死链，所以默认不动
+        # 央视走xx网关，网关并发测容易误判为死链，所以默认不动
         if not a.all_groups and not any(k in gname for k in a.only_group):
             lines.append("%s,#genre#" % gname)
             lines.extend("%s,%s" % (n, u) for n, u in items)

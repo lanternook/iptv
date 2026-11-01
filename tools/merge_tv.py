@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""merge_tv.py —— 以电视端实测结果为底，叠加湖北移动网关源（同省优先）。
+"""merge_tv.py —— 以电视端实测结果为底，叠加xx移动网关源（同省优先）。
 
 规则：
   1. 底表 = 电视端测速结果（顺序即该网络下的速率降序）
-  2. 湖北网关源（config/extra_hubei.txt）插到对应台的**第一条**，其余线路顺延为备选
+  2. xx网关源（config/extra_gw_a.txt）插到对应台的**第一条**，其余线路顺延为备选
   3. 同台内 URL 去重，每台最多保留 --per-channel 条
   4. 只输出 txt（不出 m3u）
 
@@ -55,7 +55,7 @@ def parse_groups(path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tv", default=os.path.join(ROOT, "output", "tv_result.txt"))
-    ap.add_argument("--gw", default=os.path.join(ROOT, "config", "extra_hubei.txt"))
+    ap.add_argument("--gw", default=os.path.join(ROOT, "config", "extra_gw_a.txt"))
     ap.add_argument("--out", default=os.path.join(ROOT, "output", "curated.txt"))
     ap.add_argument("--per-channel", type=int, default=6)
     ap.add_argument("--drop-group", action="append", default=[], help="整组丢弃，如 --drop-group 凤凰频道")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""探测湖北移动转发网关：连通性、播放列表结构、可能的频道清单接口。"""
+"""探测xx移动转发网关：连通性、播放列表结构、可能的频道清单接口。"""
 import urllib.request, socket, ssl, sys
 
 GW = "http://120.40.39.246:352"

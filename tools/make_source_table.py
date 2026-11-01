@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """从 curated.txt 生成「频道—来源—查找思路」完整成功表（Markdown + JSON）
 
-实测一律取**移动网络 3 轮**（手机 WiFi bg2025 → 湖北孝感移动，phone_speed.py 跑）：
+实测一律取**移动网络 3 轮**（手机 WiFi xx → xx移动，phone_speed.py 跑）：
   tmp/phone_rates_3r.tsv   首选源 3 轮 min/avg/max
   tmp/cand_rates_3r.tsv    候选源 3 轮 min/avg/max
 判定取 **min**（手册 §6：晚高峰看最差那轮）。
@@ -18,7 +18,7 @@ CUR = os.path.join(BASE, 'output', 'curated.txt')
 OUT_MD = os.path.join(os.path.dirname(BASE), '报表', 'iptv_源表.md')
 OUT_JSON = os.path.join(BASE, 'tmp', 'source_table.json')
 
-NET_LABEL = ('手机 WiFi `bg2025`（出口 111.46.161.239，中国湖北孝感·移动），'
+NET_LABEL = ('手机 WiFi `xx`（出口 xx.xx.xx.xx，中国xx·移动），'
              '3 轮 × 4 秒采样，判定取 min')
 
 HOST_META = {
@@ -151,7 +151,7 @@ def main():
     L.append('# IPTV 直播源完整成功表\n')
     L.append('> 生成时间：2026-11-01 ｜ 数据源 `output/curated.txt`（%d 台 / %d 行）'
              % (len(chans), sum(len(c['urls']) for c in chans.values())))
-    L.append('> 目标网络：湖北移动（Android 盒子 + 手机「我的电视直播版」）')
+    L.append('> 目标网络：xx移动（Android 盒子 + 手机「我的电视直播版」）')
     L.append('> **实测网络**：%s' % NET_LABEL)
     deadp = [(n, r) for n, r in [(r['name'], r['p']) for r in rows] if r and r[3] == '死']
     weakp = [(n, r) for n, r in [(r['name'], r['p']) for r in rows] if r and r[3] == '弱']
@@ -255,7 +255,7 @@ def main():
     L.append('| CCTV-16 | 仅 `gmxw.7766.org:808/hls/169`，min 2.18 波动大 | 单条无替补 |')
     L.append('| 海南卫视 | 仅 `125.93.74.27:9002` 一条 | 独家单点 |')
     L.append('| 新疆/江西/西藏/广州综合/内蒙古 | 各 1 条 | 单点无备 |')
-    L.append('| 湖北本地 7 台 | 长江云 CDN 全 403 | 模板占位 |')
+    L.append('| xx本地 7 台 | 长江云 CDN 全 403 | 模板占位 |')
 
     L.append('\n## 五、机器可读\n')
     L.append('| 文件 | 内容 |')

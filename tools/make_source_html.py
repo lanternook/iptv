@@ -20,7 +20,7 @@ GAP = [
     ('海南卫视', '仅 125.93.74.27:9002 一条', '独家单点，该机倒即归零'),
     ('内蒙古卫视', '仅 play1-qk.nmtv.cn 一条', '单点无备用'),
     ('新疆 / 江西 / 西藏 / 广州综合', '各 1 条源', '单点无备用'),
-    ('湖北本地 7 台', '长江云 CDN 全 403（auth_key 约 1 小时轮换）', '模板占位，无源'),
+    ('xx本地 7 台', '长江云 CDN 全 403（auth_key 约 1 小时轮换）', '模板占位，无源'),
     ('东方 / 香港 / 广东卫视', '移动侧 3 轮全无（已从订阅移除）', '本轮删除，需重找'),
 ]
 
@@ -221,8 +221,8 @@ code{font-family:var(--mono);font-size:12px;background:#f2f4f6;padding:1px 5px;b
 <body>
 <div class="wrap">
   <h1>IPTV 直播源完整成功表</h1>
-  <div class="sub">数据源 <code>output/curated.txt</code>（__NCH__ 台 / __NLINE__ 行）｜ 目标网络：湖北移动<br>
-    <b>实测网络</b>：手机 WiFi <code>bg2025</code> → 出口 <code>111.46.161.239</code>（中国湖北孝感·移动），3 轮 × 4 秒采样，逐条解析到 .ts 分片计时，判定取 min</div>
+  <div class="sub">数据源 <code>output/curated.txt</code>（__NCH__ 台 / __NLINE__ 行）｜ 目标网络：xx移动<br>
+    <b>实测网络</b>：手机 WiFi <code>xx</code> → 出口 <code>xx.xx.xx.xx</code>（中国xx·移动），3 轮 × 4 秒采样，逐条解析到 .ts 分片计时，判定取 min</div>
   <div class="stats" id="stats"></div>
 
   <div class="tabs">

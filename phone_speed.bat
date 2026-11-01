@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-set "ADB=E:/workbuddy/tmp/adb-tools/platform-tools/adb.exe"
+set "ADB=tools/adb-tools/platform-tools/adb.exe"
 if not exist "%ADB%" set "ADB=adb"
 echo ============================================
 echo   手机测速（目标机同网，通常是湖北移动）
